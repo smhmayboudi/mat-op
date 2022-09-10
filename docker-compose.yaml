@@ -1,0 +1,56 @@
+version: "3"
+
+services:
+
+  dex:
+    image: ghcr.io/dexidp/dex:v2.30.0
+    ports:
+      - 5556:5556
+    # restart: unless-stopped
+    volumes:
+      - ./dex-config.yaml:/etc/dex/config.docker.yaml
+
+  element:
+    image: vectorim/element-web:v1.11.3
+    ports:
+      - 8080:80
+    # restart: unless-stopped
+    volumes:
+      - ./element-config.json:/app/config.json
+
+  postgres:
+    environment:
+     - LC_COLLATE=C
+     - LC_CTYPE=C
+     - POSTGRES_DB=synapse
+     - POSTGRES_INITDB_ARGS='--encoding=UTF-8'
+     - POSTGRES_PASSWORD=STRONGPASSWORD
+     - POSTGRES_USER=synapse
+    image: postgres:14.5-bullseye
+    # restart: unless-stopped
+    volumes:
+      - ./postgresdata:/var/lib/postgresql/data
+
+  synapse:
+    environment:
+      - ALLOW_UNSAFE_LOCALE=true
+      - SYNAPSE_REPORT_STATS=yes
+      - SYNAPSE_SERVER_NAME=127.0.0.1:8008
+    image: matrixdotorg/synapse:v1.65.0
+    ports:
+      - 8008:8008
+    # restart: unless-stopped
+    volumes:
+      - ./synapse:/data
+
+  caddy:
+    environment:
+      - reverse_proxy_from=synapse:8008
+      - reverse_proxy_to=synapse
+    image: caddy:2.5.2-builder-alpine
+    ports:
+      - 80:80
+      - 443:443
+    # restart: unless-stopped
+    volumes:
+      - /caddy:/data

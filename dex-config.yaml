@@ -1,0 +1,127 @@
+# {{- /* NOTE: This configuration file is an example and exists only for development purposes. */ -}}
+# {{- /* To find more about gomplate formatting, please visit its documentation site - https://docs.gomplate.ca/ */ -}}
+# issuer: {{ getenv "DEX_ISSUER" "http://127.0.0.1:5556/dex" }}
+
+# storage:
+#   type: sqlite3
+#   config:
+#     file: {{ getenv "DEX_STORAGE_SQLITE3_CONFIG_FILE" "/var/dex/dex.db" }}
+
+# web:
+# {{- if getenv "DEX_WEB_HTTPS" "" }}
+#   https: {{ .Env.DEX_WEB_HTTPS }}
+#   tlsKey: {{ getenv "DEX_WEB_TLS_KEY" | required "$DEX_WEB_TLS_KEY in case of web.https is enabled" }}
+#   tlsCert: {{ getenv "DEX_WEB_TLS_CERT" | required "$DEX_WEB_TLS_CERT in case of web.https is enabled" }}
+# {{- end }}
+#   http: {{ getenv "DEX_WEB_HTTP" "0.0.0.0:5556" }}
+
+# {{- if getenv "DEX_TELEMETRY_HTTP" }}
+# telemetry:
+#   http: {{ .Env.DEX_TELEMETRY_HTTP }}
+# {{- end }}
+
+# expiry:
+#   deviceRequests: {{ getenv "DEX_EXPIRY_DEVICE_REQUESTS" "5m" }}
+#   signingKeys: {{ getenv "DEX_EXPIRY_SIGNING_KEYS" "6h" }}
+#   idTokens: {{ getenv "DEX_EXPIRY_ID_TOKENS" "24h" }}
+#   authRequests: {{ getenv "DEX_EXPIRY_AUTH_REQUESTS" "24h" }}
+
+# logger:
+#   level: {{ getenv "DEX_LOG_LEVEL" "info" }}
+#   format: {{ getenv "DEX_LOG_FORMAT" "text" }}
+
+# oauth2:
+#   responseTypes: {{ getenv "DEX_OAUTH2_RESPONSE_TYPES" "[code]" }}
+#   skipApprovalScreen: {{ getenv "DEX_OAUTH2_SKIP_APPROVAL_SCREEN" "false" }}
+#   alwaysShowLoginScreen: {{ getenv "DEX_OAUTH2_ALWAYS_SHOW_LOGIN_SCREEN" "false" }}
+# {{- if getenv "DEX_OAUTH2_PASSWORD_CONNECTOR" "" }}
+#   passwordConnector: {{ .Env.DEX_OAUTH2_PASSWORD_CONNECTOR }}
+# {{- end }}
+
+# enablePasswordDB: {{ getenv "DEX_ENABLE_PASSWORD_DB" "true" }}
+
+# connectors:
+# {{- if getenv "DEX_CONNECTORS_ENABLE_MOCK" }}
+# - type: mockCallback
+#   id: mock
+#   name: Example
+# {{- end }}
+
+issuer: {{ getenv "DEX_ISSUER" "http://dex:5556/dex" }}
+
+storage:
+  type: sqlite3
+  config:
+    file: {{ getenv "DEX_STORAGE_SQLITE3_CONFIG_FILE" "/var/dex/dex.db" }}
+
+web:
+  http: {{ getenv "DEX_WEB_HTTP" "0.0.0.0:5556" }}
+
+# expiry:
+#   deviceRequests: {{ getenv "DEX_EXPIRY_DEVICE_REQUESTS" "5m" }}
+#   signingKeys: {{ getenv "DEX_EXPIRY_SIGNING_KEYS" "6h" }}
+#   idTokens: {{ getenv "DEX_EXPIRY_ID_TOKENS" "24h" }}
+#   authRequests: {{ getenv "DEX_EXPIRY_AUTH_REQUESTS" "24h" }}
+
+logger:
+  level: {{ getenv "DEX_LOG_LEVEL" "info" }}
+  format: {{ getenv "DEX_LOG_FORMAT" "text" }}
+
+# oauth2:
+#   responseTypes: {{ getenv "DEX_OAUTH2_RESPONSE_TYPES" "[code]" }}
+#   skipApprovalScreen: {{ getenv "DEX_OAUTH2_SKIP_APPROVAL_SCREEN" "false" }}
+#   alwaysShowLoginScreen: {{ getenv "DEX_OAUTH2_ALWAYS_SHOW_LOGIN_SCREEN" "false" }}
+# {{- if getenv "DEX_OAUTH2_PASSWORD_CONNECTOR" "" }}
+#   passwordConnector: {{ .Env.DEX_OAUTH2_PASSWORD_CONNECTOR }}
+# {{- end }}
+
+enablePasswordDB: {{ getenv "DEX_ENABLE_PASSWORD_DB" "true" }}
+
+connectors:
+- type: google
+  id: google
+  name: Google
+  config:
+
+    # Connector config values starting with a "$" will read from the environment.
+    clientID: 405261081900-fke3dnepv7hpvoq23q3alfob888r0g5r.apps.googleusercontent.com
+    clientSecret: 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
+
+    # Dex's issuer URL + "/callback"
+    redirectURI: http://localhost:5556/callback
+
+    # Google supports whitelisting allowed domains when using G Suite
+    # (Google Apps). The following field can be set to a list of domains
+    # that can log in:
+    #
+    # hostedDomains:
+    #  - example.com
+
+    # The Google connector supports whitelisting allowed groups when using G Suite
+    # (Google Apps). The following field can be set to a list of groups
+    # that can log in:
+    #
+    # groups:
+    #  - admins@example.com
+
+    # Google does not support the OpenID Connect groups claim and only supports
+    # fetching a user's group membership with a service account.
+    # This service account requires an authentication JSON file and the email
+    # of a G Suite admin to impersonate:
+    #
+    #serviceAccountFilePath: googleAuth.json
+    #adminEmail: super-user@example.com
+
+staticClients:
+- id: synapse
+  secret: secret
+  redirectURIs:
+  - 'http://synapse:8008/_synapse/client/oidc/callback'
+  name: 'synapse'
+
+staticPasswords:
+- email: "admin@example.com"
+  # bcrypt hash of the string "password": $(echo password | htpasswd -BinC 10 admin | cut -d: -f2)
+  hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+  username: "admin"
+  userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
